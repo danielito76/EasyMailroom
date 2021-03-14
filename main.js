@@ -1,13 +1,9 @@
 // copied from Altlas MongoDB example
 const MongoClient = require('mongodb').MongoClient;
-const uri = "mongodb+srv://Daniele-Nocito:<password>@clustereasymailroom.7c56v.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
+const uri = "mongodb+srv://Daniele-Nocito:5skfWZUcYcs9d9CI@clustereasymailroom.7c56v.mongodb.net/food?retryWrites=true&w=majority";
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-//client.connect(err => {
-//  const collection = client.db("test").collection("devices");
-//  // perform actions on the collection object
-//  client.close();
-//});
 //==================================================================
+// copied from Altlas MongoDB tutorial
 //const { MongoClient, ObjectID } = require("mongodb");
 const Express = require("express");
 const Cors = require("cors");
