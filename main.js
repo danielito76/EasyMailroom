@@ -1,54 +1,61 @@
-// copied from Altlas MongoDB example
-const MongoClient = require('mongodb').MongoClient;
-const uri = "mongodb+srv://Daniele-Nocito:5skfWZUcYcs9d9CI@clustereasymailroom.7c56v.mongodb.net/food?retryWrites=true&w=majority";
-const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-//==================================================================
-// copied from Altlas MongoDB tutorial
-//const { MongoClient, ObjectID } = require("mongodb");
-const Express = require("express");
-const Cors = require("cors");
-const BodyParser = require("body-parser");
-const { request } = require("express");
-//const client = new MongoClient(process.env["ATLAS_URI"]);
-const server = Express();
-server.use(BodyParser.json());
-server.use(BodyParser.urlencoded({ extended: true }));
-server.use(Cors());
-let collection;
-server.get('/search', async (request, response) => {
+const { MongoClient, ObjectID } = require('mongodb');
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+
+const client = new MongoClient(
+    'mongodb+srv://Daniele-Nocito:5skfWZUcYcs9d9CI@clustereasymailroom.7c56v.mongodb.net/food?retryWrites=true&w=majority',
+    { useUnifiedTopology: true }
+);
+
+const server = express();
+
+server.use(bodyParser.json());
+server.use(bodyParser.urlencoded({ extended: true }));
+server.use(cors());
+
+var collection;
+
+server.get('/search', async (req, res) => {
     try {
-        let result = await collection.aggregate([
-            {
-                "$search": {
-                    "autocomplete": {
-                        "query": `${request.query.query}`,
-                        "path": "name",
-                        "fuzzy": {
-                            "maxEdits": 2,
-                            "prefixLength": 3
-                        }
-                    }
-                }
-            }
-        ]).toArray();
-        response.send(result);
-    } catch (e) {
-        response.status(500).send({ message: e.message });
+        let result = await collection
+            .aggregate([
+                {
+                    $search: {
+                        autocomplete: {
+                            query: req.query.query,
+                            path: 'name',
+                            fuzzy: {
+                                maxEdits: 2,
+                            },
+                        },
+                    },
+                },
+            ])
+            .toArray();
+        res.send(result);
+    } catch (error) {
+        res.status(500).send({ message: error.message });
     }
 });
-server.get('/get/:id', async (request, response) => {
+
+server.get('/get/:id', async (req, res) => {
     try {
-        let result = await collection.findOne({ "_id": ObjectID(request.params.id) });
-        response.send(result);
-    } catch (e) {
-        response.status(500).send({ message: e.message });
+//      Mistake corrected:
+//      let result = await collection.findOne({ _id: ObjectID(req.params.id) });
+        let result = await collection.findOne({ _id: req.params.id });
+        res.send(result);
+    } catch (error) {
+        res.status(500).send({ message: error.message });
     }
 });
-server.listen("3000", async () => {
+
+server.listen(3000, async () => {
     try {
         await client.connect();
-        collection = client.db("food").collection("recipes");
-    } catch (e) {
-        console.error(e);
+        collection = client.db('food').collection('recipes');
+        console.log('Listening on port 3000');
+    } catch (error) {
+        console.error(error);
     }
 });
