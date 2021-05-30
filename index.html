@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <script
+          src="https://code.jquery.com/jquery-3.6.0.min.js"
+          integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+          crossorigin="anonymous"
+      ></script>
+      <link
+          rel="stylesheet"
+          href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"
+      />
+      <link rel="stylesheet" href="./style.css">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+      <style>
+      .fa {
+        padding: 20px;
+        font-size: 30px;
+        width: 50px;
+        text-align: center;
+        text-decoration: none;
+        margin: 50px 80px;
+      }
+
+      .fa-rss {
+        background: #0047bb;
+        color: white;
+      }
+      .fa:hover {
+        opacity: 0.7;
+      }
+      .fa:focus {
+        background: red;
+      }
+      </style>
+      <script
+          src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+          integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+          crossorigin="anonymous"
+      ></script>
+      <title>Auto complete MongoDB</title>
+  </head>
+  <body>
+    <!-- .....................................................................................................-->
+    <!-- Graphics from sito Poste Italiane  -->
+    <header class="apply-flow-header" data-bind="inViewport: {obsv: inViewport, edge: 'bottom'}, css: {'apply-flow-header--not-in-vieport': !inViewport()}">
+      <nav class="apply-flow-header__nav">
+        <logo class="apply-flow-header__nav-logo">
+          <!-- ko if: logoMobile -->
+          <a class="navbar-link navbar-link--mobile" data-bind="route: 'home-page', routeConfig: { inherit: false },
+          i18nAttr: { title: 'general.a11y.go-to-home-page' }" href="https://fa-emza-saasfaprod1.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/it/sites/CX_1001/" title="Vai alla home page">
+            <img class="navbar-logo--layout navbar-logo--regular" data-bind="attr: {'src': logoMobile}" alt="" src="https://fa-emza-saasfaprod1.fa.ocs.oraclecloud.com/cs/idcplg?IdcService=GET_FILE&amp;dID=302428&amp;dDocName=UCMFA00302848&amp;allowInterrupt=1">
+          </a>
+          <!-- /ko -->
+
+          <!-- ko if: logoDesktop -->
+          <!-- <a class="navbar-link navbar-link--desktop" data-bind="route: 'home-page', routeConfig: { inherit: false },
+          i18nAttr: { title: 'general.a11y.go-to-home-page' }" href="https://fa-emza-saasfaprod1.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/it/sites/CX_1001/" title="Vai alla home page">
+            <img class="navbar-logo--layout navbar-logo--regular" data-bind="attr: {'src': logoDesktop}" alt="" src="https://fa-emza-saasfaprod1.fa.ocs.oraclecloud.com/cs/idcplg?IdcService=GET_FILE&amp;dID=302426&amp;dDocName=UCMFA00302846&amp;allowInterrupt=1">
+          </a> -->
+          <!-- /ko -->
+        </logo>
+        <apply-flow-draft-saving-indicator class="apply-flow-draft-saving-indicator">
+          <div class="apply-flow-draft-saving-indicator__container" aria-hidden="true">
+          <!-- ko if: messageProgress --><!-- /ko -->
+          </div>
+        </apply-flow-draft-saving-indicator>
+        <!-- <div class="apply-flow-header__nav-close">
+            <button data-bind="click: closeAction, routeLang: userLanguage, i18nAttr: {title: 'apply-flow.navigation.back-to-jobs-listing'}" class="apply-flow-header__nav-link icon-af-remove" title="Torna a Dettagli mestiere"></button>
+        </div> -->
+      </nav>
+
+      <!-- ko if: isFlowDataAvailable -->
+      <hgroup class="apply-flow-header__job-details">
+        <h1 class="apply-flow-header__job-title" data-bind="text: jobTitle()">EasyMailroom</h1>
+        <br/><h2>CMP Sesto Fiorentino</h5>
+        <!-- ko ifnot: isPostApply -->
+        <!-- <h2 class="apply-flow-header__job-location icon-location" data-bind="text: job().primaryLocation">Italy</h2> -->
+        <!-- /ko -->
+        <!-- ko if: isPostApply --><!-- /ko -->
+      </hgroup>
+      <!-- /ko -->
+      <!-- ko ifnot: isSingleClick --><!-- /ko -->
+      <!-- ko ifnot: isSingleClick --><!-- /ko -->
+
+    </header>
+    <!-- end of Graphics from sito Poste Italiane  -->
+    <!-- ....................................................................................... -->
+
+
+      <div class="ui-widget" id="recipe-container">
+          <label for="recipe" style="display: block; text-align:center; width: 100%;">Inserisci qui l'indirizzo o parte: </label>
+          <br />
+          <input type="text" id="recipe" style="height:40px;font-size:18pt;" />
+            <a href="#" class="fa fa-rss"></a>
+      </div>
+      <div class="result-widget">
+          <ul id="ingredients"></ul>
+      </div>
+
+
+      <script>
+          $(document).ready(function () {
+              $('#recipe').autocomplete({
+                  source: async (request, response) => {
+                      console.log("inside requestResponse");
+                      const data = await fetch(
+                          `http:localhost:3000/search?query=${request.term}`
+                      )
+                          .then((result) => result.json())
+                          .then((result) => {
+                              return result.map((item) => ({
+                                  label: item.name,
+                                  value: item.name,
+                                  id: item._id,
+                              }));
+                          });
+                      response(data);
+                  },
+                  minLength: 2,
+                  select: async (e, ui) => {
+                      const data = await fetch(
+                          `http://localhost:3000/get/${ui.item.id}`
+                      ).then((res) => res.json());
+
+                      $("#recipe-container").fadeOut(100);
+                      setTimeout(() => { $("#recipe-container").fadeIn(100);
+                      $('#ingredients').empty();
+                      $("#recipe").val("")  }, 4000)
+
+                      $('#ingredients').empty();
+
+                      data.ingredients.forEach((ingredient) => {
+                          $('#ingredients').append(`<li>${ingredient}</li>`);
+
+                      });
+                  },
+              });
+          });
+      </script>
+  </body>
+</html>
